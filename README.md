@@ -1,23 +1,37 @@
-# DOCX Table Style Changer
+# DOCX Table Unifier - Web Version
 
-A Python tool that automatically changes the style of all tables in a Microsoft Word document.
+[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://yourusername.github.io/docx-table-unifier)
+[![GitHub release](https://img.shields.io/github/v/release/yourusername/docx-table-unifier)](https://github.com/yourusername/docx-table-unifier/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+A powerful web-based tool that unifies all tables in any Word document with a consistent, professional theme. **Runs entirely in your browser** - no server required!
+
+![Screenshot](screenshot.png)
 
 ## Features
 
-- Change all tables in a DOCX file to any built-in Word table style
-- List all available table styles in Word
-- Simple command-line interface
-- No Microsoft Word installation required
-- Open source and free
+- **100% Client-Side** - Your documents never leave your computer
+- **No Installation Required** - Works in any modern browser
+- **Smart Theme Mapping** - Automatically matches themes to available styles
+- **7 Professional Themes** - From clean minimal to corporate bold
+- **Real-Time Preview** - See available styles instantly
+- **Drag & Drop Support** - Easy file upload
+- **Works Offline** - Can be downloaded and used locally
 
 ## Quick Start
 
-### Installation
+### Option 1: Use the Live Version
+Visit [https://yourusername.github.io/docx-table-unifier](https://yourusername.github.io/docx-table-unifier)
 
+### Option 2: Run Locally
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/docx-table-styler.git
-cd docx-table-styler
+git clone https://github.com/yourusername/docx-table-unifier.git
 
-# Install dependencies
-pip install -r requirements.txt
+# Navigate to the web version
+cd docx-table-unifier/web
+
+# Serve with any static server
+npx serve .
+# or use Python
+python -m http.server 8000
