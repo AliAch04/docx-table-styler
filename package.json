@@ -1,0 +1,27 @@
+{
+  "name": "docx-table-unifier-web",
+  "version": "1.0.0",
+  "description": "Web-based tool to unify table styles in DOCX files",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve .",
+    "build": "echo 'No build required'"
+  },
+  "keywords": [
+    "docx",
+    "tables",
+    "styling",
+    "word",
+    "document-processing"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/docx-table-unifier"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/docx-table-unifier/issues"
+  },
+  "homepage": "https://yourusername.github.io/docx-table-unifier"
+}
