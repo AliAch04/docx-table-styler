@@ -1,5 +1,6 @@
 /**
  * DOCX Table Unifier - Web Version with Interactive Color Controls
+ * COMPLETE WORKING VERSION
  */
 
 // Theme definitions
@@ -250,8 +251,8 @@ class DocxTableUnifier {
                 this.applyTableStyle(table, styleToUse);
             }
             
-            // Apply manual formatting
-            this.applyManualFormatting(table, this.selectedTheme.colors);
+            // Apply manual formatting with custom colors
+            this.applyManualFormattingWithCustomColors(table);
             
             // Update progress
             this.updateProgress(i + 1, this.tables.length);
@@ -278,7 +279,7 @@ class DocxTableUnifier {
         }
     }
 
-    applyManualFormatting(table, colors) {
+    applyManualFormattingWithCustomColors(table) {
         const rows = table.getElementsByTagName('w:tr');
         
         for (let i = 0; i < rows.length; i++) {
@@ -292,30 +293,30 @@ class DocxTableUnifier {
                     cell.insertBefore(tcPr, cell.firstChild);
                 }
                 
-                // Add borders
-                if (colors.borderStyle) {
-                    this.addBorders(tcPr, colors.borderStyle);
+                // Add borders with custom color
+                if (this.customColors.borderStyle) {
+                    this.addBordersWithColor(tcPr, this.customColors.borderStyle, this.customColors.borderColor);
                 }
                 
                 // Header row formatting
                 if (i === 0) {
-                    if (colors.headerBg) {
-                        this.addShading(tcPr, colors.headerBg);
+                    if (this.customColors.headerBg) {
+                        this.addShading(tcPr, this.customColors.headerBg.substring(1)); // Remove #
                     }
                     
-                    if (colors.headerBold) {
+                    if (this.customColors.headerBold) {
                         this.makeTextBold(cell);
                     }
                     
-                    if (colors.headerText) {
-                        this.setTextColor(cell, colors.headerText);
+                    if (this.customColors.headerText) {
+                        this.setTextColor(cell, this.customColors.headerText.substring(1)); // Remove #
                     }
                 }
             }
         }
         
         // Alternating rows
-        if (colors.alternatingRows && rows.length > 1) {
+        if (this.customColors.alternatingRows && rows.length > 1) {
             for (let i = 1; i < rows.length; i += 2) {
                 const cells = rows[i].getElementsByTagName('w:tc');
                 for (let cell of cells) {
@@ -324,10 +325,25 @@ class DocxTableUnifier {
                         tcPr = this.documentXml.createElement('w:tcPr');
                         cell.insertBefore(tcPr, cell.firstChild);
                     }
-                    this.addShading(tcPr, 'F5F5F5');
+                    this.addShading(tcPr, this.customColors.altRowColor.substring(1)); // Remove #
                 }
             }
         }
+    }
+
+    addBordersWithColor(tcPr, style, color) {
+        const borders = this.documentXml.createElement('w:tcBorders');
+        
+        ['top', 'left', 'bottom', 'right'].forEach(side => {
+            const border = this.documentXml.createElement(`w:${side}`);
+            border.setAttribute('w:val', style);
+            border.setAttribute('w:sz', '4');
+            border.setAttribute('w:space', '0');
+            border.setAttribute('w:color', color.substring(1)); // Remove # for XML
+            borders.appendChild(border);
+        });
+        
+        tcPr.appendChild(borders);
     }
 
     addBorders(tcPr, style) {
@@ -397,20 +413,26 @@ class DocxTableUnifier {
 
     updateProgress(current, total) {
         const percent = (current / total) * 100;
-        document.getElementById('progressFill').style.width = `${percent}%`;
+        const progressFill = document.getElementById('progressFill');
+        if (progressFill) {
+            progressFill.style.width = `${percent}%`;
+        }
         
         this.addLog(`Table ${current}/${total} processed`, 'success');
     }
 
     addLog(message, type = 'info') {
         const logSection = document.getElementById('logSection');
+        if (!logSection) return;
+        
         const entry = document.createElement('div');
         entry.className = `log-entry log-${type}`;
         entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
         logSection.appendChild(entry);
         logSection.scrollTop = logSection.scrollHeight;
     }
-// Add new method for preview
+
+    // Preview methods
     updatePreview(themeKey, customStyle = null) {
         const theme = THEMES[themeKey];
         if (!theme) return;
@@ -420,7 +442,10 @@ class DocxTableUnifier {
         const styleToUse = customStyle || matchedStyle;
         
         // Update preview info
-        document.getElementById('previewThemeName').textContent = theme.name;
+        const previewThemeName = document.getElementById('previewThemeName');
+        const previewStyleInfo = document.getElementById('previewStyleInfo');
+        
+        if (previewThemeName) previewThemeName.textContent = theme.name;
         
         let styleInfo = '';
         let badgeClass = '';
@@ -436,31 +461,38 @@ class DocxTableUnifier {
             badgeClass = 'badge-manual';
         }
         
-        document.getElementById('previewStyleInfo').innerHTML = 
-            `<span class="style-match-badge ${badgeClass}">${styleInfo}</span>`;
+        if (previewStyleInfo) {
+            previewStyleInfo.innerHTML = 
+                `<span class="style-match-badge ${badgeClass}">${styleInfo}</span>`;
+        }
         
         // Update color previews
         const colors = theme.colors;
-        document.getElementById('previewHeaderColor').style.backgroundColor = 
-            colors.headerBg ? '#' + colors.headerBg : '#ffffff';
+        const previewHeaderColor = document.getElementById('previewHeaderColor');
+        if (previewHeaderColor) {
+            previewHeaderColor.style.backgroundColor = colors.headerBg ? '#' + colors.headerBg : '#ffffff';
+        }
         
         // Apply theme to preview table
         this.applyPreviewStyles(theme, styleToUse);
         
         // Show/hide alternating row preview
         const altRowElement = document.getElementById('previewAltRow');
-        if (colors.alternatingRows) {
-            altRowElement.style.display = 'flex';
-        } else {
-            altRowElement.style.display = 'none';
+        if (altRowElement) {
+            altRowElement.style.display = colors.alternatingRows ? 'flex' : 'none';
         }
     }
 
     applyPreviewStyles(theme, styleName) {
         const previewTable = document.getElementById('previewTable');
+        if (!previewTable) return;
+        
         const table = previewTable.querySelector('table');
+        if (!table) return;
+        
         const headers = table.querySelectorAll('th');
         const rows = table.querySelectorAll('tr');
+        const cells = table.querySelectorAll('td');
         
         // Reset styles
         table.style.borderCollapse = 'collapse';
@@ -478,7 +510,6 @@ class DocxTableUnifier {
         });
         
         // Apply cell styles
-        const cells = table.querySelectorAll('td');
         cells.forEach(cell => {
             cell.style.padding = '10px 12px';
             cell.style.border = `1px solid ${theme.colors.borderColor ? '#' + theme.colors.borderColor : '#dee2e6'}`;
@@ -514,7 +545,11 @@ class DocxTableUnifier {
     // Update preview with custom colors
     updatePreviewWithCustomColors() {
         const previewTable = document.getElementById('previewTable');
+        if (!previewTable) return;
+        
         const table = previewTable.querySelector('table');
+        if (!table) return;
+        
         const headers = table.querySelectorAll('th');
         const rows = table.querySelectorAll('tr');
         const cells = table.querySelectorAll('td');
@@ -575,7 +610,7 @@ class DocxTableUnifier {
         const currentStyle = document.getElementById('currentStyle');
         const selectedCard = document.querySelector('.theme-card.selected');
         
-        if (selectedCard) {
+        if (selectedCard && currentTheme && currentStyle) {
             const themeKey = selectedCard.dataset.theme;
             currentTheme.textContent = THEMES[themeKey].name;
             
@@ -603,22 +638,33 @@ class DocxTableUnifier {
         this.customColors.alternatingRows = theme.colors.alternatingRows;
         
         // Update UI controls
-        document.getElementById('headerColorPicker').value = this.customColors.headerBg;
-        document.getElementById('headerColorHex').value = this.customColors.headerBg;
-        document.getElementById('headerTextColorPicker').value = this.customColors.headerText;
-        document.getElementById('headerTextColorHex').value = this.customColors.headerText;
-        document.getElementById('borderColorPicker').value = this.customColors.borderColor;
-        document.getElementById('borderColorHex').value = this.customColors.borderColor;
-        document.getElementById('altRowColorPicker').value = this.customColors.altRowColor;
-        document.getElementById('altRowColorHex').value = this.customColors.altRowColor;
-        document.getElementById('borderStyleSelect').value = this.customColors.borderStyle;
-        document.getElementById('headerBoldCheckbox').checked = this.customColors.headerBold;
-        document.getElementById('alternatingRowsCheckbox').checked = this.customColors.alternatingRows;
+        const headerColorPicker = document.getElementById('headerColorPicker');
+        const headerColorHex = document.getElementById('headerColorHex');
+        const headerTextPicker = document.getElementById('headerTextColorPicker');
+        const headerTextHex = document.getElementById('headerTextColorHex');
+        const borderPicker = document.getElementById('borderColorPicker');
+        const borderHex = document.getElementById('borderColorHex');
+        const altRowPicker = document.getElementById('altRowColorPicker');
+        const altRowHex = document.getElementById('altRowColorHex');
+        const borderStyleSelect = document.getElementById('borderStyleSelect');
+        const headerBoldCheckbox = document.getElementById('headerBoldCheckbox');
+        const alternatingRowsCheckbox = document.getElementById('alternatingRowsCheckbox');
+        
+        if (headerColorPicker) headerColorPicker.value = this.customColors.headerBg;
+        if (headerColorHex) headerColorHex.value = this.customColors.headerBg;
+        if (headerTextPicker) headerTextPicker.value = this.customColors.headerText;
+        if (headerTextHex) headerTextHex.value = this.customColors.headerText;
+        if (borderPicker) borderPicker.value = this.customColors.borderColor;
+        if (borderHex) borderHex.value = this.customColors.borderColor;
+        if (altRowPicker) altRowPicker.value = this.customColors.altRowColor;
+        if (altRowHex) altRowHex.value = this.customColors.altRowColor;
+        if (borderStyleSelect) borderStyleSelect.value = this.customColors.borderStyle;
+        if (headerBoldCheckbox) headerBoldCheckbox.checked = this.customColors.headerBold;
+        if (alternatingRowsCheckbox) alternatingRowsCheckbox.checked = this.customColors.alternatingRows;
         
         // Update preview
         this.updatePreviewWithCustomColors();
     }
-
 }
 
 // Updated UIController with color controls
@@ -632,31 +678,36 @@ class UIController {
 
     initEventListeners() {
         // File input
-        document.getElementById('fileInput').addEventListener('change', (e) => {
-            this.handleFileSelect(e.target.files[0]);
-        });
+        const fileInput = document.getElementById('fileInput');
+        if (fileInput) {
+            fileInput.addEventListener('change', (e) => {
+                this.handleFileSelect(e.target.files[0]);
+            });
+        }
 
         // Drag and drop
         const dropZone = document.getElementById('dropZone');
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('dragover');
-        });
+        if (dropZone) {
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            });
 
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('dragover');
-        });
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('dragover');
+            });
 
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('dragover');
-            const file = e.dataTransfer.files[0];
-            if (file && file.name.endsWith('.docx')) {
-                this.handleFileSelect(file);
-            } else {
-                alert('Please drop a valid DOCX file');
-            }
-        });
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                const file = e.dataTransfer.files[0];
+                if (file && file.name.endsWith('.docx')) {
+                    this.handleFileSelect(file);
+                } else {
+                    alert('Please drop a valid DOCX file');
+                }
+            });
+        }
 
         // Theme selection
         document.addEventListener('click', (e) => {
@@ -667,6 +718,14 @@ class UIController {
                 this.unifier.loadThemeColors(themeKey);
             }
         });
+
+        // Process button
+        const processBtn = document.getElementById('processBtn');
+        if (processBtn) {
+            processBtn.addEventListener('click', () => {
+                this.processDocument();
+            });
+        }
     }
 
     initColorControls() {
@@ -674,99 +733,117 @@ class UIController {
         const headerPicker = document.getElementById('headerColorPicker');
         const headerHex = document.getElementById('headerColorHex');
         
-        headerPicker.addEventListener('input', (e) => {
-            headerHex.value = e.target.value;
-            this.unifier.customColors.headerBg = e.target.value;
-            this.unifier.updatePreviewWithCustomColors();
-        });
-        
-        headerHex.addEventListener('input', (e) => {
-            let value = e.target.value;
-            if (/^#[0-9A-F]{6}$/i.test(value)) {
-                headerPicker.value = value;
-                this.unifier.customColors.headerBg = value;
+        if (headerPicker && headerHex) {
+            headerPicker.addEventListener('input', (e) => {
+                headerHex.value = e.target.value;
+                this.unifier.customColors.headerBg = e.target.value;
                 this.unifier.updatePreviewWithCustomColors();
-            }
-        });
+            });
+            
+            headerHex.addEventListener('input', (e) => {
+                let value = e.target.value;
+                if (/^#[0-9A-F]{6}$/i.test(value)) {
+                    headerPicker.value = value;
+                    this.unifier.customColors.headerBg = value;
+                    this.unifier.updatePreviewWithCustomColors();
+                }
+            });
+        }
 
         // Header text color picker
         const headerTextPicker = document.getElementById('headerTextColorPicker');
         const headerTextHex = document.getElementById('headerTextColorHex');
         
-        headerTextPicker.addEventListener('input', (e) => {
-            headerTextHex.value = e.target.value;
-            this.unifier.customColors.headerText = e.target.value;
-            this.unifier.updatePreviewWithCustomColors();
-        });
-        
-        headerTextHex.addEventListener('input', (e) => {
-            let value = e.target.value;
-            if (/^#[0-9A-F]{6}$/i.test(value)) {
-                headerTextPicker.value = value;
-                this.unifier.customColors.headerText = value;
+        if (headerTextPicker && headerTextHex) {
+            headerTextPicker.addEventListener('input', (e) => {
+                headerTextHex.value = e.target.value;
+                this.unifier.customColors.headerText = e.target.value;
                 this.unifier.updatePreviewWithCustomColors();
-            }
-        });
+            });
+            
+            headerTextHex.addEventListener('input', (e) => {
+                let value = e.target.value;
+                if (/^#[0-9A-F]{6}$/i.test(value)) {
+                    headerTextPicker.value = value;
+                    this.unifier.customColors.headerText = value;
+                    this.unifier.updatePreviewWithCustomColors();
+                }
+            });
+        }
 
         // Border color picker
         const borderPicker = document.getElementById('borderColorPicker');
         const borderHex = document.getElementById('borderColorHex');
         
-        borderPicker.addEventListener('input', (e) => {
-            borderHex.value = e.target.value;
-            this.unifier.customColors.borderColor = e.target.value;
-            this.unifier.updatePreviewWithCustomColors();
-        });
-        
-        borderHex.addEventListener('input', (e) => {
-            let value = e.target.value;
-            if (/^#[0-9A-F]{6}$/i.test(value)) {
-                borderPicker.value = value;
-                this.unifier.customColors.borderColor = value;
+        if (borderPicker && borderHex) {
+            borderPicker.addEventListener('input', (e) => {
+                borderHex.value = e.target.value;
+                this.unifier.customColors.borderColor = e.target.value;
                 this.unifier.updatePreviewWithCustomColors();
-            }
-        });
+            });
+            
+            borderHex.addEventListener('input', (e) => {
+                let value = e.target.value;
+                if (/^#[0-9A-F]{6}$/i.test(value)) {
+                    borderPicker.value = value;
+                    this.unifier.customColors.borderColor = value;
+                    this.unifier.updatePreviewWithCustomColors();
+                }
+            });
+        }
 
         // Alternating row color picker
         const altRowPicker = document.getElementById('altRowColorPicker');
         const altRowHex = document.getElementById('altRowColorHex');
         
-        altRowPicker.addEventListener('input', (e) => {
-            altRowHex.value = e.target.value;
-            this.unifier.customColors.altRowColor = e.target.value;
-            this.unifier.updatePreviewWithCustomColors();
-        });
-        
-        altRowHex.addEventListener('input', (e) => {
-            let value = e.target.value;
-            if (/^#[0-9A-F]{6}$/i.test(value)) {
-                altRowPicker.value = value;
-                this.unifier.customColors.altRowColor = value;
+        if (altRowPicker && altRowHex) {
+            altRowPicker.addEventListener('input', (e) => {
+                altRowHex.value = e.target.value;
+                this.unifier.customColors.altRowColor = e.target.value;
                 this.unifier.updatePreviewWithCustomColors();
-            }
-        });
+            });
+            
+            altRowHex.addEventListener('input', (e) => {
+                let value = e.target.value;
+                if (/^#[0-9A-F]{6}$/i.test(value)) {
+                    altRowPicker.value = value;
+                    this.unifier.customColors.altRowColor = value;
+                    this.unifier.updatePreviewWithCustomColors();
+                }
+            });
+        }
 
         // Border style select
-        document.getElementById('borderStyleSelect').addEventListener('change', (e) => {
-            this.unifier.customColors.borderStyle = e.target.value;
-            this.unifier.updatePreviewWithCustomColors();
-        });
+        const borderStyleSelect = document.getElementById('borderStyleSelect');
+        if (borderStyleSelect) {
+            borderStyleSelect.addEventListener('change', (e) => {
+                this.unifier.customColors.borderStyle = e.target.value;
+                this.unifier.updatePreviewWithCustomColors();
+            });
+        }
 
         // Checkboxes
-        document.getElementById('headerBoldCheckbox').addEventListener('change', (e) => {
-            this.unifier.customColors.headerBold = e.target.checked;
-            this.unifier.updatePreviewWithCustomColors();
-        });
+        const headerBoldCheckbox = document.getElementById('headerBoldCheckbox');
+        if (headerBoldCheckbox) {
+            headerBoldCheckbox.addEventListener('change', (e) => {
+                this.unifier.customColors.headerBold = e.target.checked;
+                this.unifier.updatePreviewWithCustomColors();
+            });
+        }
 
-        document.getElementById('alternatingRowsCheckbox').addEventListener('change', (e) => {
-            this.unifier.customColors.alternatingRows = e.target.checked;
-            this.unifier.updatePreviewWithCustomColors();
-        });
+        const alternatingRowsCheckbox = document.getElementById('alternatingRowsCheckbox');
+        if (alternatingRowsCheckbox) {
+            alternatingRowsCheckbox.addEventListener('change', (e) => {
+                this.unifier.customColors.alternatingRows = e.target.checked;
+                this.unifier.updatePreviewWithCustomColors();
+            });
+        }
     }
 
     initColorPresets() {
         // Add color preset chips to the UI
         const colorCustomization = document.querySelector('.color-customization');
+        if (!colorCustomization) return;
         
         // Create preset section
         const presetSection = document.createElement('div');
@@ -790,10 +867,14 @@ class UIController {
                 
                 chip.addEventListener('click', () => {
                     // Apply to header color
-                    document.getElementById('headerColorPicker').value = color;
-                    document.getElementById('headerColorHex').value = color;
-                    this.unifier.customColors.headerBg = color;
-                    this.unifier.updatePreviewWithCustomColors();
+                    const headerPicker = document.getElementById('headerColorPicker');
+                    const headerHex = document.getElementById('headerColorHex');
+                    if (headerPicker && headerHex) {
+                        headerPicker.value = color;
+                        headerHex.value = color;
+                        this.unifier.customColors.headerBg = color;
+                        this.unifier.updatePreviewWithCustomColors();
+                    }
                 });
                 
                 chipsDiv.appendChild(chip);
@@ -811,10 +892,13 @@ class UIController {
         if (!file) return;
 
         // Show file info
-        document.getElementById('fileName').textContent = file.name;
-        document.getElementById('fileSize').textContent = 
-            (file.size / 1024).toFixed(2) + ' KB';
-        document.getElementById('fileInfo').classList.add('active');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const fileInfo = document.getElementById('fileInfo');
+        
+        if (fileName) fileName.textContent = file.name;
+        if (fileSize) fileSize.textContent = (file.size / 1024).toFixed(2) + ' KB';
+        if (fileInfo) fileInfo.classList.add('active');
 
         // Load and parse file
         const result = await this.unifier.loadFile(file);
@@ -827,10 +911,15 @@ class UIController {
         this.displayThemes();
         
         // Show sections
-        document.getElementById('stylesSection').style.display = 'block';
-        document.getElementById('themesSection').style.display = 'block';
-        document.getElementById('previewSection').style.display = 'block';
-        document.getElementById('processBtn').disabled = false;
+        const stylesSection = document.getElementById('stylesSection');
+        const themesSection = document.getElementById('themesSection');
+        const previewSection = document.getElementById('previewSection');
+        const processBtn = document.getElementById('processBtn');
+        
+        if (stylesSection) stylesSection.style.display = 'block';
+        if (themesSection) themesSection.style.display = 'block';
+        if (previewSection) previewSection.style.display = 'block';
+        if (processBtn) processBtn.disabled = false;
         
         // Load first theme by default
         this.selectTheme('1');
@@ -839,6 +928,8 @@ class UIController {
 
     displayAvailableStyles() {
         const grid = document.getElementById('stylesGrid');
+        if (!grid) return;
+        
         grid.innerHTML = '';
         
         this.unifier.availableStyles.forEach(style => {
@@ -855,6 +946,8 @@ class UIController {
 
     displayThemes() {
         const grid = document.getElementById('themesGrid');
+        if (!grid) return;
+        
         grid.innerHTML = '';
         
         for (let [key, theme] of Object.entries(THEMES)) {
@@ -889,16 +982,25 @@ class UIController {
         });
         
         const selectedCard = document.querySelector(`.theme-card[data-theme="${themeKey}"]`);
-        selectedCard.classList.add('selected', 'preview-active');
+        if (selectedCard) {
+            selectedCard.classList.add('selected', 'preview-active');
+        }
         
-        document.getElementById('previewThemeName').textContent = THEMES[themeKey].name;
+        const previewThemeName = document.getElementById('previewThemeName');
+        if (previewThemeName && THEMES[themeKey]) {
+            previewThemeName.textContent = THEMES[themeKey].name;
+        }
     }
 
     async processDocument() {
         // Show progress section
-        document.getElementById('progressSection').classList.add('active');
-        document.getElementById('logSection').innerHTML = '';
-        document.getElementById('processBtn').disabled = true;
+        const progressSection = document.getElementById('progressSection');
+        const processBtn = document.getElementById('processBtn');
+        const logSection = document.getElementById('logSection');
+        
+        if (progressSection) progressSection.classList.add('active');
+        if (logSection) logSection.innerHTML = '';
+        if (processBtn) processBtn.disabled = true;
         
         // Get selected theme
         const selectedCard = document.querySelector('.theme-card.selected');
@@ -908,7 +1010,8 @@ class UIController {
         }
         
         const themeKey = selectedCard.dataset.theme;
-        const customStyle = document.getElementById('customStyleInput').value;
+        const customStyle = document.getElementById('customStyleInput') ? 
+            document.getElementById('customStyleInput').value : '';
         
         // Process document
         try {
@@ -917,11 +1020,14 @@ class UIController {
             // Create download link
             const url = URL.createObjectURL(blob);
             const downloadBtn = document.getElementById('downloadBtn');
-            downloadBtn.href = url;
-            downloadBtn.download = 'styled_' + this.unifier.file.name;
+            if (downloadBtn) {
+                downloadBtn.href = url;
+                downloadBtn.download = 'styled_' + this.unifier.file.name;
+            }
             
             // Show download section
-            document.getElementById('downloadSection').classList.add('active');
+            const downloadSection = document.getElementById('downloadSection');
+            if (downloadSection) downloadSection.classList.add('active');
             
             this.unifier.addLog('✅ Processing complete!', 'success');
         } catch (error) {
