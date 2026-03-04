@@ -720,6 +720,24 @@
             transform: scale(1.1);
         }
 
+        .reset-btn {
+            margin-top: 20px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .reset-btn:hover {
+            background: #5a6268;
+        }
+
         @media (max-width: 768px) {
             .header h1 {
                 font-size: 1.8em;
@@ -728,6 +746,7 @@
             .themes-grid {
                 grid-template-columns: 1fr;
             }
+
         }
     </style>
 </head>
@@ -825,6 +844,11 @@
                         <div class="preview-info">
                             <h4 id="previewThemeName">Professional Blue</h4>
                             <p id="previewStyleInfo">Using theme colors + custom settings</p>
+                        </div>
+
+                        <div class="action-buttons" style="display: flex; gap: 10px; margin-top: 20px;">
+                            <button class="process-btn" id="processBtn" style="flex: 2;" disabled>Process Document</button>
+                            <button class="reset-btn" id="resetBtn" style="flex: 1; background: #6c757d;">Reset</button>
                         </div>
 
                         <!-- Color Customization -->

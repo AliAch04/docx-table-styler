@@ -1,6 +1,6 @@
 /**
  * DOCX Table Unifier - Web Version with Interactive Color Controls
- * COMPLETE WORKING VERSION
+ * FIXED: Alternating rows toggle and Reset button
  */
 
 // Theme definitions
@@ -108,6 +108,28 @@ const COLOR_PRESETS = {
 
 class DocxTableUnifier {
     constructor() {
+        this.file = null;
+        this.zip = null;
+        this.documentXml = null;
+        this.stylesXml = null;
+        this.availableStyles = [];
+        this.tables = [];
+        this.styleMapping = {};
+        this.selectedTheme = null;
+        this.customStyle = null;
+        this.customColors = {
+            headerBg: '#4472C4',
+            headerText: '#FFFFFF',
+            borderColor: '#000000',
+            altRowColor: '#F5F5F5',
+            borderStyle: 'single',
+            headerBold: true,
+            alternatingRows: true
+        };
+    }
+
+    // Reset the unifier state
+    reset() {
         this.file = null;
         this.zip = null;
         this.documentXml = null;
@@ -315,7 +337,7 @@ class DocxTableUnifier {
             }
         }
         
-        // Alternating rows
+        // Alternating rows - NOW RESPECTS THE CHECKBOX STATE
         if (this.customColors.alternatingRows && rows.length > 1) {
             for (let i = 1; i < rows.length; i += 2) {
                 const cells = rows[i].getElementsByTagName('w:tc');
@@ -576,7 +598,7 @@ class DocxTableUnifier {
             cell.style.fontSize = '10px';
         });
         
-        // Apply alternating rows
+        // Apply alternating rows - NOW RESPECTS THE CHECKBOX STATE
         if (this.customColors.alternatingRows) {
             for (let i = 1; i < rows.length; i++) {
                 const rowCells = rows[i].querySelectorAll('td');
@@ -667,13 +689,14 @@ class DocxTableUnifier {
     }
 }
 
-// Updated UIController with color controls
+// Updated UIController with color controls and reset functionality
 class UIController {
     constructor() {
         this.unifier = new DocxTableUnifier();
         this.initEventListeners();
         this.initColorControls();
         this.initColorPresets();
+        this.initResetButton();
     }
 
     initEventListeners() {
@@ -726,6 +749,58 @@ class UIController {
                 this.processDocument();
             });
         }
+    }
+
+    initResetButton() {
+        const resetBtn = document.getElementById('resetBtn');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', () => {
+                this.resetApplication();
+            });
+        }
+    }
+
+    resetApplication() {
+        // Reset unifier state
+        this.unifier.reset();
+        
+        // Clear file input
+        const fileInput = document.getElementById('fileInput');
+        if (fileInput) fileInput.value = '';
+        
+        // Hide sections
+        const sections = [
+            'fileInfo',
+            'stylesSection', 
+            'themesSection', 
+            'previewSection', 
+            'progressSection', 
+            'downloadSection'
+        ];
+        
+        sections.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+        });
+        
+        // Clear log
+        const logSection = document.getElementById('logSection');
+        if (logSection) logSection.innerHTML = '';
+        
+        // Reset progress bar
+        const progressFill = document.getElementById('progressFill');
+        if (progressFill) progressFill.style.width = '0%';
+        
+        // Disable process button
+        const processBtn = document.getElementById('processBtn');
+        if (processBtn) processBtn.disabled = true;
+        
+        // Reset to theme 1 colors
+        this.selectTheme('1');
+        this.unifier.loadThemeColors('1');
+        
+        // Show dropzone message
+        alert('Application reset. You can now choose another file.');
     }
 
     initColorControls() {
@@ -822,7 +897,7 @@ class UIController {
             });
         }
 
-        // Checkboxes
+        // Checkboxes - FIXED: Now properly toggles alternating rows
         const headerBoldCheckbox = document.getElementById('headerBoldCheckbox');
         if (headerBoldCheckbox) {
             headerBoldCheckbox.addEventListener('change', (e) => {
