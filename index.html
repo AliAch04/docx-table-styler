@@ -282,29 +282,6 @@
             outline: none;
         }
 
-        .process-btn {
-            width: 100%;
-            padding: 15px;
-            background: #28a745;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 1.2em;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.3s;
-            margin: 20px 0;
-        }
-
-        .process-btn:hover:not(:disabled) {
-            background: #218838;
-        }
-
-        .process-btn:disabled {
-            background: #6c757d;
-            cursor: not-allowed;
-        }
-
         .progress-section {
             margin: 30px 0;
             display: none;
@@ -720,9 +697,37 @@
             transform: scale(1.1);
         }
 
+        /* Button styles */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .process-btn {
+            flex: 2;
+            padding: 15px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .process-btn:hover:not(:disabled) {
+            background: #218838;
+        }
+
+        .process-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+
         .reset-btn {
-            margin-top: 20px;
-            margin-bottom: 20px;
+            flex: 1;
             padding: 15px;
             background: #6c757d;
             color: white;
@@ -747,6 +752,9 @@
                 grid-template-columns: 1fr;
             }
 
+            .action-buttons {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
@@ -846,9 +854,10 @@
                             <p id="previewStyleInfo">Using theme colors + custom settings</p>
                         </div>
 
-                        <div class="action-buttons" style="display: flex; gap: 10px; margin-top: 20px;">
-                            <button class="process-btn" id="processBtn" style="flex: 2;" disabled>Process Document</button>
-                            <button class="reset-btn" id="resetBtn" style="flex: 1; background: #6c757d;">Reset</button>
+                        <!-- Action Buttons - ONLY ONE SET -->
+                        <div class="action-buttons">
+                            <button class="process-btn" id="processBtn" disabled>Process Document</button>
+                            <button class="reset-btn" id="resetBtn">Reset</button>
                         </div>
 
                         <!-- Color Customization -->
@@ -940,9 +949,6 @@
                 <input type="text" class="custom-style-input" id="customStyleInput" 
                        placeholder="e.g., Light Shading Accent 1">
             </div>
-
-            <!-- Process Button -->
-            <button class="process-btn" id="processBtn" disabled>Process Document</button>
 
             <!-- Progress Section -->
             <div class="progress-section" id="progressSection">
