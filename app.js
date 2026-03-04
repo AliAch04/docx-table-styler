@@ -1,21 +1,22 @@
 /**
- * DOCX Table Unifier - Web Version with Preview
+ * DOCX Table Unifier - Web Version with Interactive Color Controls
  */
 
-// Theme definitions with visual properties
+// Theme definitions
 const THEMES = {
     '1': {
         name: 'Professional Blue',
         description: 'Clean, professional with blue headers',
         preferredStyles: ['Normal Table', 'Light Shading Accent 1', 'Medium Shading 1 Accent 1'],
         colors: {
-            headerBg: 'D9E1F2',
-            headerText: '000000',
-            borderStyle: 'single',
+            headerBg: '4472C4',
+            headerText: 'FFFFFF',
             borderColor: '000000',
+            altRowColor: 'F5F5F5',
+            borderStyle: 'single',
             fontSize: 10,
             headerBold: true,
-            alternatingRows: false
+            alternatingRows: true
         }
     },
     '2': {
@@ -25,8 +26,9 @@ const THEMES = {
         colors: {
             headerBg: 'F2F2F2',
             headerText: '000000',
-            borderStyle: 'single',
             borderColor: 'CCCCCC',
+            altRowColor: 'FAFAFA',
+            borderStyle: 'single',
             fontSize: 10,
             headerBold: true,
             alternatingRows: false
@@ -39,12 +41,12 @@ const THEMES = {
         colors: {
             headerBg: 'E6F0FA',
             headerText: '000000',
-            borderStyle: 'single',
             borderColor: '666666',
+            altRowColor: 'F5F5F5',
+            borderStyle: 'single',
             fontSize: 10,
             headerBold: true,
-            alternatingRows: true,
-            altRowColor: 'F5F5F5'
+            alternatingRows: true
         }
     },
     '4': {
@@ -54,11 +56,12 @@ const THEMES = {
         colors: {
             headerBg: '4472C4',
             headerText: 'FFFFFF',
-            borderStyle: 'single',
             borderColor: '000000',
+            altRowColor: 'F5F5F5',
+            borderStyle: 'single',
             fontSize: 11,
             headerBold: true,
-            alternatingRows: false
+            alternatingRows: true
         }
     },
     '5': {
@@ -68,11 +71,12 @@ const THEMES = {
         colors: {
             headerBg: '44546A',
             headerText: 'FFFFFF',
-            borderStyle: 'single',
             borderColor: '000000',
+            altRowColor: 'F5F5F5',
+            borderStyle: 'single',
             fontSize: 10,
             headerBold: true,
-            alternatingRows: false
+            alternatingRows: true
         }
     },
     '6': {
@@ -82,13 +86,23 @@ const THEMES = {
         colors: {
             headerBg: 'FFFFFF',
             headerText: '000000',
-            borderStyle: 'single',
             borderColor: '000000',
+            altRowColor: 'F5F5F5',
+            borderStyle: 'single',
             fontSize: 10,
             headerBold: false,
             alternatingRows: false
         }
     }
+};
+
+// Color presets for quick selection
+const COLOR_PRESETS = {
+    blues: ['#4472C4', '#5B9BD5', '#2F5597', '#1E3F5F'],
+    grays: ['#F2F2F2', '#D9D9D9', '#A6A6A6', '#595959'],
+    greens: ['#70AD47', '#92D050', '#548235', '#385D3A'],
+    oranges: ['#ED7D31', '#FF8C42', '#C65911', '#A33E0A'],
+    purples: ['#7030A0', '#9966FF', '#5A3E8A', '#3C2A5E']
 };
 
 class DocxTableUnifier {
@@ -102,7 +116,15 @@ class DocxTableUnifier {
         this.styleMapping = {};
         this.selectedTheme = null;
         this.customStyle = null;
-        this.previewElement = document.getElementById('previewTable');
+        this.customColors = {
+            headerBg: '#4472C4',
+            headerText: '#FFFFFF',
+            borderColor: '#000000',
+            altRowColor: '#F5F5F5',
+            borderStyle: 'single',
+            headerBold: true,
+            alternatingRows: true
+        };
     }
 
     // Load and parse DOCX file
@@ -488,13 +510,124 @@ class DocxTableUnifier {
             }
         }
     }
+
+    // Update preview with custom colors
+    updatePreviewWithCustomColors() {
+        const previewTable = document.getElementById('previewTable');
+        const table = previewTable.querySelector('table');
+        const headers = table.querySelectorAll('th');
+        const rows = table.querySelectorAll('tr');
+        const cells = table.querySelectorAll('td');
+        
+        // Apply styles from custom colors
+        table.style.borderCollapse = 'collapse';
+        table.style.fontFamily = "'Segoe UI', sans-serif";
+        
+        // Apply header styles
+        headers.forEach(header => {
+            header.style.backgroundColor = this.customColors.headerBg;
+            header.style.color = this.customColors.headerText;
+            header.style.fontWeight = this.customColors.headerBold ? 'bold' : 'normal';
+            header.style.padding = '12px';
+            header.style.textAlign = 'left';
+            header.style.border = `1px solid ${this.customColors.borderColor}`;
+            header.style.fontSize = '10px';
+        });
+        
+        // Apply cell styles
+        cells.forEach(cell => {
+            cell.style.padding = '10px 12px';
+            cell.style.border = `1px solid ${this.customColors.borderColor}`;
+            cell.style.fontSize = '10px';
+        });
+        
+        // Apply alternating rows
+        if (this.customColors.alternatingRows) {
+            for (let i = 1; i < rows.length; i++) {
+                const rowCells = rows[i].querySelectorAll('td');
+                if (i % 2 === 1) {
+                    rowCells.forEach(cell => {
+                        cell.style.backgroundColor = this.customColors.altRowColor;
+                    });
+                } else {
+                    rowCells.forEach(cell => {
+                        cell.style.backgroundColor = '#ffffff';
+                    });
+                }
+            }
+        } else {
+            // Reset alternating rows
+            for (let i = 1; i < rows.length; i++) {
+                const rowCells = rows[i].querySelectorAll('td');
+                rowCells.forEach(cell => {
+                    cell.style.backgroundColor = '#ffffff';
+                });
+            }
+        }
+        
+        // Update settings summary
+        this.updateSettingsSummary();
+    }
+
+    // Update settings summary
+    updateSettingsSummary() {
+        const currentTheme = document.getElementById('currentTheme');
+        const currentStyle = document.getElementById('currentStyle');
+        const selectedCard = document.querySelector('.theme-card.selected');
+        
+        if (selectedCard) {
+            const themeKey = selectedCard.dataset.theme;
+            currentTheme.textContent = THEMES[themeKey].name;
+            
+            const matchedStyle = this.styleMapping[themeKey];
+            if (matchedStyle && this.availableStyles.some(s => s.name === matchedStyle)) {
+                currentStyle.textContent = matchedStyle;
+            } else {
+                currentStyle.textContent = 'Manual Formatting';
+            }
+        }
+    }
+
+    // Load theme colors to customizer
+    loadThemeColors(themeKey) {
+        const theme = THEMES[themeKey];
+        if (!theme) return;
+        
+        // Update custom colors with theme values (add # prefix)
+        this.customColors.headerBg = '#' + theme.colors.headerBg;
+        this.customColors.headerText = '#' + theme.colors.headerText;
+        this.customColors.borderColor = '#' + theme.colors.borderColor;
+        this.customColors.altRowColor = '#' + theme.colors.altRowColor;
+        this.customColors.borderStyle = theme.colors.borderStyle;
+        this.customColors.headerBold = theme.colors.headerBold;
+        this.customColors.alternatingRows = theme.colors.alternatingRows;
+        
+        // Update UI controls
+        document.getElementById('headerColorPicker').value = this.customColors.headerBg;
+        document.getElementById('headerColorHex').value = this.customColors.headerBg;
+        document.getElementById('headerTextColorPicker').value = this.customColors.headerText;
+        document.getElementById('headerTextColorHex').value = this.customColors.headerText;
+        document.getElementById('borderColorPicker').value = this.customColors.borderColor;
+        document.getElementById('borderColorHex').value = this.customColors.borderColor;
+        document.getElementById('altRowColorPicker').value = this.customColors.altRowColor;
+        document.getElementById('altRowColorHex').value = this.customColors.altRowColor;
+        document.getElementById('borderStyleSelect').value = this.customColors.borderStyle;
+        document.getElementById('headerBoldCheckbox').checked = this.customColors.headerBold;
+        document.getElementById('alternatingRowsCheckbox').checked = this.customColors.alternatingRows;
+        
+        // Update preview
+        this.updatePreviewWithCustomColors();
+    }
+
 }
 
-// Updated UIController with preview
+// Updated UIController with color controls
 class UIController {
     constructor() {
         this.unifier = new DocxTableUnifier();
         this.initEventListeners();
+        this.initColorControls();
+        this.initColorPresets();
     }
 
     initEventListeners() {
@@ -525,31 +658,153 @@ class UIController {
             }
         });
 
-        // Theme selection with preview
+        // Theme selection
         document.addEventListener('click', (e) => {
             const themeCard = e.target.closest('.theme-card');
             if (themeCard) {
                 const themeKey = themeCard.dataset.theme;
                 this.selectTheme(themeKey);
+                this.unifier.loadThemeColors(themeKey);
+            }
+        });
+    }
+
+    initColorControls() {
+        // Header color picker
+        const headerPicker = document.getElementById('headerColorPicker');
+        const headerHex = document.getElementById('headerColorHex');
+        
+        headerPicker.addEventListener('input', (e) => {
+            headerHex.value = e.target.value;
+            this.unifier.customColors.headerBg = e.target.value;
+            this.unifier.updatePreviewWithCustomColors();
+        });
+        
+        headerHex.addEventListener('input', (e) => {
+            let value = e.target.value;
+            if (/^#[0-9A-F]{6}$/i.test(value)) {
+                headerPicker.value = value;
+                this.unifier.customColors.headerBg = value;
+                this.unifier.updatePreviewWithCustomColors();
+            }
+        });
+
+        // Header text color picker
+        const headerTextPicker = document.getElementById('headerTextColorPicker');
+        const headerTextHex = document.getElementById('headerTextColorHex');
+        
+        headerTextPicker.addEventListener('input', (e) => {
+            headerTextHex.value = e.target.value;
+            this.unifier.customColors.headerText = e.target.value;
+            this.unifier.updatePreviewWithCustomColors();
+        });
+        
+        headerTextHex.addEventListener('input', (e) => {
+            let value = e.target.value;
+            if (/^#[0-9A-F]{6}$/i.test(value)) {
+                headerTextPicker.value = value;
+                this.unifier.customColors.headerText = value;
+                this.unifier.updatePreviewWithCustomColors();
+            }
+        });
+
+        // Border color picker
+        const borderPicker = document.getElementById('borderColorPicker');
+        const borderHex = document.getElementById('borderColorHex');
+        
+        borderPicker.addEventListener('input', (e) => {
+            borderHex.value = e.target.value;
+            this.unifier.customColors.borderColor = e.target.value;
+            this.unifier.updatePreviewWithCustomColors();
+        });
+        
+        borderHex.addEventListener('input', (e) => {
+            let value = e.target.value;
+            if (/^#[0-9A-F]{6}$/i.test(value)) {
+                borderPicker.value = value;
+                this.unifier.customColors.borderColor = value;
+                this.unifier.updatePreviewWithCustomColors();
+            }
+        });
+
+        // Alternating row color picker
+        const altRowPicker = document.getElementById('altRowColorPicker');
+        const altRowHex = document.getElementById('altRowColorHex');
+        
+        altRowPicker.addEventListener('input', (e) => {
+            altRowHex.value = e.target.value;
+            this.unifier.customColors.altRowColor = e.target.value;
+            this.unifier.updatePreviewWithCustomColors();
+        });
+        
+        altRowHex.addEventListener('input', (e) => {
+            let value = e.target.value;
+            if (/^#[0-9A-F]{6}$/i.test(value)) {
+                altRowPicker.value = value;
+                this.unifier.customColors.altRowColor = value;
+                this.unifier.updatePreviewWithCustomColors();
+            }
+        });
+
+        // Border style select
+        document.getElementById('borderStyleSelect').addEventListener('change', (e) => {
+            this.unifier.customColors.borderStyle = e.target.value;
+            this.unifier.updatePreviewWithCustomColors();
+        });
+
+        // Checkboxes
+        document.getElementById('headerBoldCheckbox').addEventListener('change', (e) => {
+            this.unifier.customColors.headerBold = e.target.checked;
+            this.unifier.updatePreviewWithCustomColors();
+        });
+
+        document.getElementById('alternatingRowsCheckbox').addEventListener('change', (e) => {
+            this.unifier.customColors.alternatingRows = e.target.checked;
+            this.unifier.updatePreviewWithCustomColors();
+        });
+    }
+
+    initColorPresets() {
+        // Add color preset chips to the UI
+        const colorCustomization = document.querySelector('.color-customization');
+        
+        // Create preset section
+        const presetSection = document.createElement('div');
+        presetSection.className = 'color-presets-section';
+        presetSection.innerHTML = '<h4>🎨 Color Presets</h4>';
+        
+        // Add preset categories
+        for (let [category, colors] of Object.entries(COLOR_PRESETS)) {
+            const categoryDiv = document.createElement('div');
+            categoryDiv.className = 'color-preset-category';
+            categoryDiv.innerHTML = `<span class="preset-label">${category}:</span>`;
+            
+            const chipsDiv = document.createElement('div');
+            chipsDiv.className = 'color-presets';
+            
+            colors.forEach(color => {
+                const chip = document.createElement('div');
+                chip.className = 'color-chip';
+                chip.style.backgroundColor = color;
+                chip.dataset.color = color;
                 
-                // Update preview
-                const customStyle = document.getElementById('customStyleInput').value;
-                this.unifier.updatePreview(themeKey, customStyle);
-            }
-        });
-
-        // Custom style input with preview update
-        document.getElementById('customStyleInput').addEventListener('input', (e) => {
-            const selectedCard = document.querySelector('.theme-card.selected');
-            if (selectedCard && selectedCard.dataset.theme === '7') {
-                this.unifier.updatePreview('7', e.target.value);
-            }
-        });
-
-        // Process button
-        document.getElementById('processBtn').addEventListener('click', () => {
-            this.processDocument();
-        });
+                chip.addEventListener('click', () => {
+                    // Apply to header color
+                    document.getElementById('headerColorPicker').value = color;
+                    document.getElementById('headerColorHex').value = color;
+                    this.unifier.customColors.headerBg = color;
+                    this.unifier.updatePreviewWithCustomColors();
+                });
+                
+                chipsDiv.appendChild(chip);
+            });
+            
+            categoryDiv.appendChild(chipsDiv);
+            presetSection.appendChild(categoryDiv);
+        }
+        
+        // Insert after the color pickers
+        colorCustomization.appendChild(presetSection);
     }
 
     async handleFileSelect(file) {
@@ -577,9 +832,9 @@ class UIController {
         document.getElementById('previewSection').style.display = 'block';
         document.getElementById('processBtn').disabled = false;
         
-        // Show preview for first theme by default
+        // Load first theme by default
         this.selectTheme('1');
-        this.unifier.updatePreview('1');
+        this.unifier.loadThemeColors('1');
     }
 
     displayAvailableStyles() {
@@ -604,17 +859,14 @@ class UIController {
         
         for (let [key, theme] of Object.entries(THEMES)) {
             const matchedStyle = this.unifier.styleMapping[key];
-            const matchQuality = matchedStyle ? 'exact' : 'none';
             
             const card = document.createElement('div');
             card.className = 'theme-card';
             card.dataset.theme = key;
             
             const matchText = matchedStyle ? 
-                `Will use: <strong>${matchedStyle}</strong>` : 
-                'Will use manual formatting';
-            
-            const matchClass = matchedStyle ? 'badge-exact' : 'badge-manual';
+                `Base style: ${matchedStyle}` : 
+                'Manual formatting';
             
             card.innerHTML = `
                 <div class="theme-header">
@@ -623,7 +875,7 @@ class UIController {
                 </div>
                 <div class="theme-description">${theme.description}</div>
                 <div class="theme-style">
-                    <span class="style-match-badge ${matchClass}">${matchText}</span>
+                    <span class="style-match-badge badge-exact">${matchText}</span>
                 </div>
             `;
             
@@ -632,23 +884,14 @@ class UIController {
     }
 
     selectTheme(themeKey) {
-        // Remove selected class from all cards
         document.querySelectorAll('.theme-card').forEach(c => {
             c.classList.remove('selected', 'preview-active');
         });
         
-        // Add selected class to chosen card
         const selectedCard = document.querySelector(`.theme-card[data-theme="${themeKey}"]`);
         selectedCard.classList.add('selected', 'preview-active');
         
-        // Show/hide custom style section
-        const customSection = document.getElementById('customStyleSection');
-        if (themeKey === '7') {
-            customSection.classList.add('active');
-        } else {
-            customSection.classList.remove('active');
-            this.unifier.selectedTheme = themeKey;
-        }
+        document.getElementById('previewThemeName').textContent = THEMES[themeKey].name;
     }
 
     async processDocument() {

@@ -398,7 +398,7 @@
             text-decoration: underline;
         }
 
-                /* Preview Section Styles */
+        /* Preview Section Styles */
         .preview-section {
             margin: 40px 0;
             padding: 30px;
@@ -529,6 +529,197 @@
             box-shadow: 0 10px 30px rgba(40, 167, 69, 0.2);
         }
 
+        /* Color Customization Styles */
+        .color-customization {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .color-customization h4 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .color-picker-group {
+            margin-bottom: 15px;
+        }
+
+        .color-picker-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .color-picker-wrapper {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .color-picker-wrapper input[type="color"] {
+            width: 50px;
+            height: 40px;
+            border: 2px solid #dee2e6;
+            border-radius: 5px;
+            cursor: pointer;
+            padding: 2px;
+        }
+
+        .color-picker-wrapper input[type="text"] {
+            flex: 1;
+            padding: 8px 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+
+        .color-picker-wrapper input[type="text"]:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+
+        .checkbox-group {
+            margin: 15px 0;
+        }
+
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #555;
+            cursor: pointer;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .border-style-group {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .border-style-group h4 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .border-style-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #dee2e6;
+            border-radius: 5px;
+            font-size: 0.95em;
+            cursor: pointer;
+        }
+
+        .border-style-group select:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+
+        .settings-summary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 10px;
+            color: white;
+            margin-top: 20px;
+        }
+
+        .settings-summary h4 {
+            color: white;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .settings-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9em;
+        }
+
+        .setting-label {
+            opacity: 0.8;
+        }
+
+        .setting-value {
+            font-weight: bold;
+            background: rgba(255,255,255,0.2);
+            padding: 3px 8px;
+            border-radius: 12px;
+        }
+
+        /* Quick action buttons */
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .quick-action-btn {
+            flex: 1;
+            padding: 8px;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            color: #555;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quick-action-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        /* Color preset chips */
+        .color-presets {
+            display: flex;
+            gap: 8px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+
+        .color-chip {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .color-chip:hover {
+            transform: scale(1.1);
+            border-color: #333;
+        }
+
+        .color-chip.selected {
+            border-color: #28a745;
+            transform: scale(1.1);
+        }
+
         @media (max-width: 768px) {
             .header h1 {
                 font-size: 1.8em;
@@ -573,10 +764,11 @@
                 <div class="themes-grid" id="themesGrid"></div>
             </div>
 
-            <!-- Preview Section (Add this after themes section) -->
+            <!-- Enhanced Preview Section with Color Pickers -->
             <div class="preview-section" id="previewSection" style="display: none;">
-                <h2>👁️ Live Preview</h2>
+                <h2>👁️ Live Preview & Customization</h2>
                 <div class="preview-container">
+                    <!-- Preview Table -->
                     <div class="preview-table" id="previewTable">
                         <table>
                             <thead>
@@ -585,6 +777,7 @@
                                     <th>Source IP</th>
                                     <th>Destination</th>
                                     <th>Status</th>
+                                    <th>Bytes</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -593,45 +786,123 @@
                                     <td>192.168.1.100</td>
                                     <td>10.0.0.5:22</td>
                                     <td>Failed</td>
+                                    <td>1,234</td>
                                 </tr>
                                 <tr>
                                     <td>MQTT</td>
                                     <td>192.168.1.101</td>
                                     <td>10.0.0.6:1883</td>
                                     <td>Success</td>
+                                    <td>567</td>
                                 </tr>
                                 <tr>
                                     <td>HTTP</td>
                                     <td>192.168.1.102</td>
                                     <td>10.0.0.7:80</td>
                                     <td>401</td>
+                                    <td>2,890</td>
                                 </tr>
                                 <tr>
                                     <td>SSH</td>
                                     <td>192.168.1.103</td>
                                     <td>10.0.0.8:22</td>
                                     <td>Timeout</td>
+                                    <td>0</td>
+                                </tr>
+                                <tr>
+                                    <td>MQTT</td>
+                                    <td>192.168.1.104</td>
+                                    <td>10.0.0.9:1883</td>
+                                    <td>Success</td>
+                                    <td>1,023</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
+
+                    <!-- Customization Panel -->
                     <div class="preview-controls">
-                        <div class="preview-info" id="previewInfo">
+                        <div class="preview-info">
                             <h4 id="previewThemeName">Professional Blue</h4>
-                            <p id="previewStyleInfo">Using: Normal Table</p>
+                            <p id="previewStyleInfo">Using theme colors + custom settings</p>
                         </div>
-                        <div class="preview-colors">
-                            <div class="color-sample">
-                                <span class="color-label">Header:</span>
-                                <span class="color-box" id="previewHeaderColor" style="background-color: #D9E1F2;"></span>
+
+                        <!-- Color Customization -->
+                        <div class="color-customization">
+                            <h4>🎨 Customize Colors</h4>
+                            
+                            <div class="color-picker-group">
+                                <label>Header Color:</label>
+                                <div class="color-picker-wrapper">
+                                    <input type="color" id="headerColorPicker" value="#4472C4">
+                                    <input type="text" id="headerColorHex" value="#4472C4" placeholder="#RRGGBB">
+                                </div>
                             </div>
-                            <div class="color-sample">
-                                <span class="color-label">Border:</span>
-                                <span class="color-box" id="previewBorderColor" style="background-color: #000000;"></span>
+
+                            <div class="color-picker-group">
+                                <label>Header Text Color:</label>
+                                <div class="color-picker-wrapper">
+                                    <input type="color" id="headerTextColorPicker" value="#FFFFFF">
+                                    <input type="text" id="headerTextColorHex" value="#FFFFFF" placeholder="#RRGGBB">
+                                </div>
                             </div>
-                            <div class="color-sample" id="previewAltRow" style="display: none;">
-                                <span class="color-label">Alt Row:</span>
-                                <span class="color-box" style="background-color: #F5F5F5;"></span>
+
+                            <div class="color-picker-group">
+                                <label>Border Color:</label>
+                                <div class="color-picker-wrapper">
+                                    <input type="color" id="borderColorPicker" value="#000000">
+                                    <input type="text" id="borderColorHex" value="#000000" placeholder="#RRGGBB">
+                                </div>
+                            </div>
+
+                            <div class="color-picker-group">
+                                <label>Alternating Row Color:</label>
+                                <div class="color-picker-wrapper">
+                                    <input type="color" id="altRowColorPicker" value="#F5F5F5">
+                                    <input type="text" id="altRowColorHex" value="#F5F5F5" placeholder="#RRGGBB">
+                                </div>
+                            </div>
+
+                            <div class="checkbox-group">
+                                <label>
+                                    <input type="checkbox" id="alternatingRowsCheckbox" checked>
+                                    Enable alternating row colors
+                                </label>
+                            </div>
+
+                            <div class="checkbox-group">
+                                <label>
+                                    <input type="checkbox" id="headerBoldCheckbox" checked>
+                                    Bold header text
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Border Style -->
+                        <div class="border-style-group">
+                            <h4>🔲 Border Style</h4>
+                            <select id="borderStyleSelect">
+                                <option value="single">Single Line</option>
+                                <option value="double">Double Line</option>
+                                <option value="dotted">Dotted</option>
+                                <option value="dashed">Dashed</option>
+                                <option value="inset">Inset</option>
+                                <option value="outset">Outset</option>
+                            </select>
+                        </div>
+
+                        <!-- Current Settings Summary -->
+                        <div class="settings-summary">
+                            <h4>📋 Current Settings</h4>
+                            <div class="settings-list" id="settingsList">
+                                <div class="setting-item">
+                                    <span class="setting-label">Theme:</span>
+                                    <span class="setting-value" id="currentTheme">Professional Blue</span>
+                                </div>
+                                <div class="setting-item">
+                                    <span class="setting-label">Style:</span>
+                                    <span class="setting-value" id="currentStyle">Normal Table</span>
+                                </div>
                             </div>
                         </div>
                     </div>
