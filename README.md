@@ -21,7 +21,7 @@ A powerful web-based tool that unifies all tables in any Word document with a co
 ## Quick Start
 
 ### Option 1: Use the Live Version
-Visit [https://yourusername.github.io/docx-table-unifier](https://yourusername.github.io/docx-table-unifier)
+Visit [https://aliach04.github.io/docx-table-styler/](https://aliach04.github.io/docx-table-styler/)
 
 ### Option 2: Run Locally
 ```bash
