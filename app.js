@@ -1,9 +1,8 @@
 /**
- * DOCX Table Unifier - Web Version
- * Pure JavaScript implementation for browser-based DOCX processing
+ * DOCX Table Unifier - Web Version with Preview
  */
 
-// Theme definitions
+// Theme definitions with visual properties
 const THEMES = {
     '1': {
         name: 'Professional Blue',
@@ -11,9 +10,12 @@ const THEMES = {
         preferredStyles: ['Normal Table', 'Light Shading Accent 1', 'Medium Shading 1 Accent 1'],
         colors: {
             headerBg: 'D9E1F2',
+            headerText: '000000',
             borderStyle: 'single',
+            borderColor: '000000',
             fontSize: 10,
-            headerBold: true
+            headerBold: true,
+            alternatingRows: false
         }
     },
     '2': {
@@ -22,9 +24,12 @@ const THEMES = {
         preferredStyles: ['Plain Table 3', 'Light List Accent 1', 'Light Grid Accent 1'],
         colors: {
             headerBg: 'F2F2F2',
+            headerText: '000000',
             borderStyle: 'single',
+            borderColor: 'CCCCCC',
             fontSize: 10,
-            headerBold: true
+            headerBold: true,
+            alternatingRows: false
         }
     },
     '3': {
@@ -33,10 +38,13 @@ const THEMES = {
         preferredStyles: ['Table Grid', 'Medium Grid 1 Accent 1', 'Light Grid Accent 1'],
         colors: {
             headerBg: 'E6F0FA',
+            headerText: '000000',
             borderStyle: 'single',
+            borderColor: '666666',
             fontSize: 10,
             headerBold: true,
-            alternatingRows: true
+            alternatingRows: true,
+            altRowColor: 'F5F5F5'
         }
     },
     '4': {
@@ -47,8 +55,10 @@ const THEMES = {
             headerBg: '4472C4',
             headerText: 'FFFFFF',
             borderStyle: 'single',
+            borderColor: '000000',
             fontSize: 11,
-            headerBold: true
+            headerBold: true,
+            alternatingRows: false
         }
     },
     '5': {
@@ -59,8 +69,10 @@ const THEMES = {
             headerBg: '44546A',
             headerText: 'FFFFFF',
             borderStyle: 'single',
+            borderColor: '000000',
             fontSize: 10,
-            headerBold: true
+            headerBold: true,
+            alternatingRows: false
         }
     },
     '6': {
@@ -68,7 +80,13 @@ const THEMES = {
         description: 'Just add borders, keep existing formatting',
         preferredStyles: [],
         colors: {
-            borderStyle: 'single'
+            headerBg: 'FFFFFF',
+            headerText: '000000',
+            borderStyle: 'single',
+            borderColor: '000000',
+            fontSize: 10,
+            headerBold: false,
+            alternatingRows: false
         }
     }
 };
@@ -84,6 +102,7 @@ class DocxTableUnifier {
         this.styleMapping = {};
         this.selectedTheme = null;
         this.customStyle = null;
+        this.previewElement = document.getElementById('previewTable');
     }
 
     // Load and parse DOCX file
@@ -369,9 +388,109 @@ class DocxTableUnifier {
         logSection.appendChild(entry);
         logSection.scrollTop = logSection.scrollHeight;
     }
+// Add new method for preview
+    updatePreview(themeKey, customStyle = null) {
+        const theme = THEMES[themeKey];
+        if (!theme) return;
+
+        // Get the style to use
+        const matchedStyle = this.styleMapping[themeKey];
+        const styleToUse = customStyle || matchedStyle;
+        
+        // Update preview info
+        document.getElementById('previewThemeName').textContent = theme.name;
+        
+        let styleInfo = '';
+        let badgeClass = '';
+        
+        if (styleToUse && this.availableStyles.some(s => s.name === styleToUse)) {
+            styleInfo = `Using: ${styleToUse}`;
+            badgeClass = 'badge-exact';
+        } else if (styleToUse) {
+            styleInfo = `Style "${styleToUse}" not available - will use manual formatting`;
+            badgeClass = 'badge-manual';
+        } else {
+            styleInfo = 'Using manual formatting with theme colors';
+            badgeClass = 'badge-manual';
+        }
+        
+        document.getElementById('previewStyleInfo').innerHTML = 
+            `<span class="style-match-badge ${badgeClass}">${styleInfo}</span>`;
+        
+        // Update color previews
+        const colors = theme.colors;
+        document.getElementById('previewHeaderColor').style.backgroundColor = 
+            colors.headerBg ? '#' + colors.headerBg : '#ffffff';
+        
+        // Apply theme to preview table
+        this.applyPreviewStyles(theme, styleToUse);
+        
+        // Show/hide alternating row preview
+        const altRowElement = document.getElementById('previewAltRow');
+        if (colors.alternatingRows) {
+            altRowElement.style.display = 'flex';
+        } else {
+            altRowElement.style.display = 'none';
+        }
+    }
+
+    applyPreviewStyles(theme, styleName) {
+        const previewTable = document.getElementById('previewTable');
+        const table = previewTable.querySelector('table');
+        const headers = table.querySelectorAll('th');
+        const rows = table.querySelectorAll('tr');
+        
+        // Reset styles
+        table.style.borderCollapse = 'collapse';
+        table.style.fontFamily = "'Segoe UI', sans-serif";
+        
+        // Apply header styles
+        headers.forEach(header => {
+            header.style.backgroundColor = theme.colors.headerBg ? '#' + theme.colors.headerBg : '#ffffff';
+            header.style.color = theme.colors.headerText ? '#' + theme.colors.headerText : '#000000';
+            header.style.fontWeight = theme.colors.headerBold ? 'bold' : 'normal';
+            header.style.fontSize = (theme.colors.fontSize || 10) + 'px';
+            header.style.padding = '12px';
+            header.style.textAlign = 'left';
+            header.style.border = `1px solid ${theme.colors.borderColor ? '#' + theme.colors.borderColor : '#dee2e6'}`;
+        });
+        
+        // Apply cell styles
+        const cells = table.querySelectorAll('td');
+        cells.forEach(cell => {
+            cell.style.padding = '10px 12px';
+            cell.style.border = `1px solid ${theme.colors.borderColor ? '#' + theme.colors.borderColor : '#dee2e6'}`;
+            cell.style.fontSize = (theme.colors.fontSize || 10) + 'px';
+        });
+        
+        // Apply alternating rows
+        if (theme.colors.alternatingRows) {
+            for (let i = 1; i < rows.length; i++) { // Skip header row
+                if (i % 2 === 1) {
+                    const rowCells = rows[i].querySelectorAll('td');
+                    rowCells.forEach(cell => {
+                        cell.style.backgroundColor = '#' + (theme.colors.altRowColor || 'F5F5F5');
+                    });
+                } else {
+                    const rowCells = rows[i].querySelectorAll('td');
+                    rowCells.forEach(cell => {
+                        cell.style.backgroundColor = '#ffffff';
+                    });
+                }
+            }
+        } else {
+            // Reset alternating rows
+            for (let i = 1; i < rows.length; i++) {
+                const rowCells = rows[i].querySelectorAll('td');
+                rowCells.forEach(cell => {
+                    cell.style.backgroundColor = '#ffffff';
+                });
+            }
+        }
+    }
 }
 
-// UI Controller
+// Updated UIController with preview
 class UIController {
     constructor() {
         this.unifier = new DocxTableUnifier();
@@ -406,18 +525,25 @@ class UIController {
             }
         });
 
-        // Theme selection
+        // Theme selection with preview
         document.addEventListener('click', (e) => {
             const themeCard = e.target.closest('.theme-card');
             if (themeCard) {
                 const themeKey = themeCard.dataset.theme;
                 this.selectTheme(themeKey);
+                
+                // Update preview
+                const customStyle = document.getElementById('customStyleInput').value;
+                this.unifier.updatePreview(themeKey, customStyle);
             }
         });
 
-        // Custom style input
+        // Custom style input with preview update
         document.getElementById('customStyleInput').addEventListener('input', (e) => {
-            this.unifier.customStyle = e.target.value;
+            const selectedCard = document.querySelector('.theme-card.selected');
+            if (selectedCard && selectedCard.dataset.theme === '7') {
+                this.unifier.updatePreview('7', e.target.value);
+            }
         });
 
         // Process button
@@ -448,7 +574,12 @@ class UIController {
         // Show sections
         document.getElementById('stylesSection').style.display = 'block';
         document.getElementById('themesSection').style.display = 'block';
+        document.getElementById('previewSection').style.display = 'block';
         document.getElementById('processBtn').disabled = false;
+        
+        // Show preview for first theme by default
+        this.selectTheme('1');
+        this.unifier.updatePreview('1');
     }
 
     displayAvailableStyles() {
@@ -479,6 +610,12 @@ class UIController {
             card.className = 'theme-card';
             card.dataset.theme = key;
             
+            const matchText = matchedStyle ? 
+                `Will use: <strong>${matchedStyle}</strong>` : 
+                'Will use manual formatting';
+            
+            const matchClass = matchedStyle ? 'badge-exact' : 'badge-manual';
+            
             card.innerHTML = `
                 <div class="theme-header">
                     <span class="theme-number">${key}</span>
@@ -486,14 +623,7 @@ class UIController {
                 </div>
                 <div class="theme-description">${theme.description}</div>
                 <div class="theme-style">
-                    <div class="style-match">
-                        <span class="match-indicator match-${matchQuality}"></span>
-                        <span>
-                            ${matchedStyle ? 
-                                `Will use: <strong>${matchedStyle}</strong>` : 
-                                'No style match - will use manual formatting'}
-                        </span>
-                    </div>
+                    <span class="style-match-badge ${matchClass}">${matchText}</span>
                 </div>
             `;
             
@@ -504,11 +634,12 @@ class UIController {
     selectTheme(themeKey) {
         // Remove selected class from all cards
         document.querySelectorAll('.theme-card').forEach(c => {
-            c.classList.remove('selected');
+            c.classList.remove('selected', 'preview-active');
         });
         
         // Add selected class to chosen card
-        document.querySelector(`.theme-card[data-theme="${themeKey}"]`).classList.add('selected');
+        const selectedCard = document.querySelector(`.theme-card[data-theme="${themeKey}"]`);
+        selectedCard.classList.add('selected', 'preview-active');
         
         // Show/hide custom style section
         const customSection = document.getElementById('customStyleSection');
